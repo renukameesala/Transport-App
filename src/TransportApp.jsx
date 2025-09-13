@@ -258,7 +258,38 @@ const TransportApp = () => {
       </div>
 
       <Chatbot />
+{/* Bottom Navigation */}
+<div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg">
+  <div className="flex justify-around py-2">
+    {[ 
+      { id: 'home', label: 'Home', icon: Home },
+      { id: 'livemap', label: 'Live Map', icon: MapPin },
+      { id: 'routes', label: 'Routes', icon: Navigation },
+      { id: 'green', label: 'Green', icon: Leaf },
+      { id: 'lostfound', label: 'Lost & Found', icon: Package },
+      { id: 'feedback', label: 'Feedback', icon: MessageSquare }
+    ].map(tab => {
+      const IconComponent = tab.icon;
+      return (
+        <button
+          key={tab.id}
+          onClick={() => {
+            setActiveTab(tab.id);
+            speakText(`${tab.label} selected`);
+          }}
+          className={`flex flex-col items-center gap-1 p-2 min-w-12 ${activeTab === tab.id ? 'text-blue-600' : 'text-gray-500'}`}
+        >
+          <IconComponent size={20} />
+          <span className="text-xs">{tab.label}</span>
+        </button>
+      );
+    })}
+  </div>
+</div>
+
     </div>
+
+
   );
 };
 
