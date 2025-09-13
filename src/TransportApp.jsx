@@ -17,6 +17,63 @@ const TransportApp = () => {
   const [selectedRoute, setSelectedRoute] = useState('Route 1');
   const [chatOpen, setChatOpen] = useState(false);
   const speechSynthesisRef = useRef(null);
+const translations = {
+  english: {
+    emergency: "EMERGENCY SOS",
+    liveBuses: "Live Buses",
+    routes: "Routes",
+    recentTrips: "Recent Trips",
+    mapPlaceholder: "Map Placeholder",
+    lostAndFound: "Lost & Found",
+    feedback: "Feedback",
+    greenDashboard: "Green Impact",
+    trackLive: "Track Live",
+    online: "Online",
+    offline: "Offline",
+    pointsSaved: "points saved",
+    submitFeedback: "Submit Feedback",
+    giveFeedback: "Give your feedback...",
+    helloBot: "Hello! How can I help you?",
+    typeMessage: "Type your message..."
+  },
+  hindi: {
+    emergency: "आपातकालीन SOS",
+    liveBuses: "लाइव बसें",
+    routes: "रूट्स",
+    recentTrips: "हाल की यात्राएँ",
+    mapPlaceholder: "मानचित्र प्लेसहोल्डर",
+    lostAndFound: "खोया और मिला",
+    feedback: "प्रतिक्रिया",
+    greenDashboard: "हरित प्रभाव",
+    trackLive: "लाइव ट्रैक करें",
+    online: "ऑनलाइन",
+    offline: "ऑफलाइन",
+    pointsSaved: "अंक बचाए गए",
+    submitFeedback: "प्रतिक्रिया भेजें",
+    giveFeedback: "अपनी प्रतिक्रिया दें...",
+    helloBot: "नमस्ते! मैं आपकी कैसे मदद कर सकता हूँ?",
+    typeMessage: "अपना संदेश लिखें..."
+  },
+  telugu: {
+    emergency: "అత్యవసర SOS",
+    liveBuses: "లైవ్ బస్సులు",
+    routes: "మార్గాలు",
+    recentTrips: "ఇటీవలి ప్రయాణాలు",
+    mapPlaceholder: "మ్యాప్ ప్లేస్‌హోల్డర్",
+    lostAndFound: "కోల్పోయిన వస్తువులు",
+    feedback: "ఫీడ్‌బ్యాక్",
+    greenDashboard: "పచ్చ ప్రభావం",
+    trackLive: "లైవ్ ట్రాక్ చేయండి",
+    online: "ఆన్‌లైన్",
+    offline: "ఆఫ్‌లైన్",
+    pointsSaved: "పాయింట్లు సేవ్ అయ్యాయి",
+    submitFeedback: "ఫీడ్‌బ్యాక్ పంపండి",
+    giveFeedback: "మీ ఫీడ్‌బ్యాక్ ఇవ్వండి...",
+    helloBot: "హలో! నేను మీకు ఎలా సహాయం చేయగలను?",
+    typeMessage: "మీ సందేశాన్ని టైప్ చేయండి..."
+  }
+};
+
 
   const languages = {
     english: { name: 'English', code: 'en' },
@@ -172,6 +229,7 @@ const TransportApp = () => {
       </div>
     </div>
   );
+const [voiceChatActive, setVoiceChatActive] = useState(false);
 
   const LostAndFound = () => (
     <div className="space-y-4">
@@ -231,21 +289,99 @@ const TransportApp = () => {
         </div>
       )}
 
+     
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 shadow-lg flex justify-between items-center">
-        <h1 className="text-2xl font-bold">SmartTransit</h1>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setVoiceEnabled(!voiceEnabled)} className={`p-2 rounded-lg ${voiceEnabled ? 'bg-green-500' : 'bg-gray-500'}`}>
-            {voiceEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
-          </button>
-          <button onClick={() => setIsOnline(!isOnline)} className={`p-2 rounded-lg ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}>
-            {isOnline ? <Wifi size={20} /> : <WifiOff size={20} />}
-          </button>
-          <button onClick={() => setChatOpen(true)} className="p-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
-            <MessageSquare size={20} />
-          </button>
-        </div>
-      </div>
+<div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 shadow-lg flex justify-between items-center">
+  
+  {/* Left section with title and talk button */}
+  <div className="flex items-center gap-3">
+    <h1 className="text-2xl font-bold">SmartTransit</h1>
+    <button
+      onClick={() => {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Speech Recognition not supported in this browser.');
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = new SpeechRecognition();
+  recognition.lang = languages[language]?.code || 'en-US';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  recognition.start();
+  setVoiceChatActive(true);
+
+  recognition.onresult = (event) => {
+    const userSpeech = event.results[0][0].transcript;
+    console.log('User said:', userSpeech);
+
+    // Simple response logic
+    let botResponse = "I'm hearing but i can't give reply to you";
+
+    if (userSpeech.toLowerCase().includes("bus")) {
+      botResponse = "You can track your buses in the Live Map tab.";
+    } else if (userSpeech.toLowerCase().includes("routes")) {
+      botResponse = "Routes are available in the Routes tab.";
+    } else if (userSpeech.toLowerCase().includes("lost")) {
+      botResponse = "Check Lost & Found for lost items.";
+    }
+
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(botResponse);
+      utterance.lang = languages[language]?.code || 'en-US';
+      window.speechSynthesis.speak(utterance);
+    }
+
+    setVoiceChatActive(false);
+  };
+
+  recognition.onerror = (event) => {
+    console.error('Speech recognition error:', event.error);
+    setVoiceChatActive(false);
+  };
+
+  recognition.onend = () => {
+    console.log('Stopped listening.');
+    setVoiceChatActive(false);
+  };
+}}
+
+      className={`p-2 rounded-lg ${voiceChatActive ? 'bg-green-500' : 'bg-blue-500'} hover:bg-blue-600 transition-colors`}
+  aria-label="Talk option for visually impaired users"
+    >
+      <Volume2 size={24} />
+    </button>
+  </div>
+
+  {/* Right section with controls */}
+  <div className="flex items-center gap-2">
+    <button onClick={() => setVoiceEnabled(!voiceEnabled)} className={`p-2 rounded-lg ${voiceEnabled ? 'bg-green-500' : 'bg-gray-500'}`}>
+      {voiceEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+    </button>
+    <button onClick={() => setIsOnline(!isOnline)} className={`p-2 rounded-lg ${isOnline ? 'bg-green-500' : 'bg-red-500'}`}>
+      {isOnline ? <Wifi size={20} /> : <WifiOff size={20} />}
+    </button>
+    <button onClick={() => setChatOpen(true)} className="p-2 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300">
+      <MessageSquare size={20} />
+    </button>
+    <select
+      value={language}
+      onChange={(e) => setLanguage(e.target.value)}
+      className="p-2 rounded-lg border border-gray-300 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
+    >
+      {Object.keys(languages).map((key) => (
+        <option key={key} value={key}>
+          {languages[key].name}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+
+  
+
+      
 
       {/* Tabs */}
       <div className="p-4 pb-20">
@@ -256,6 +392,7 @@ const TransportApp = () => {
         {activeTab === 'lostfound' && <LostAndFound />}
         {activeTab === 'feedback' && <FeedbackView />}
       </div>
+
 
       <Chatbot />
 {/* Bottom Navigation */}
